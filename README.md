@@ -18,7 +18,7 @@ NB! в загрузке изображения обязательно указы
 [вариант загрузки файлов](https://uncaughtexception.ru/2020/01/07/zagruzka-izobrazheniy-v-laravel-6-po-shagam.html)
 
 варианты
-```
+```php
        $image = $request->file('image');
         if ($image) {
             $path = Storage::putFile('public', $image);
@@ -31,6 +31,5 @@ NB! в загрузке изображения обязательно указы
         $imageName = time().'.'.$request->image->extension();  
         $imageName = $request->image->getFilename().'.'.$request->image->extension();
         $request->image->move(public_path('images'), $imageName);
-
 
 ```
