@@ -3,7 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Post;
+
+
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+
+
+
 
 class PostController extends Controller
 {
@@ -16,7 +22,7 @@ class PostController extends Controller
     {
         
 
-         $posts = Post::select('posts.*','users.name as author')
+        $posts = Post::select('posts.*','users.name as author')
             ->join('users','posts.author_id','=','users.id')
             ->orderBy('posts.created_at','desc')
             ->paginate(4);
@@ -35,6 +41,7 @@ class PostController extends Controller
     public function create()
     {
         //
+        return view('posts.create',[]);
     }
 
     /**
@@ -45,8 +52,37 @@ class PostController extends Controller
      */
     public function store(Request $request)
     {
-        //
+
+
+        $post = new Post();
+        $post->author_id = rand(1,4);
+        $post->title = $request->input('title');
+        $post->excerpt = $request->input('excerpt');
+        $post->body = $request->input('body');
+
+
+    // dump($request); die();
+
+        $image = $request->file('image');
+        
+
+
+
+        if($image){
+
+            $path = Storage::putFile('public',$image);
+            $post->image = Storage::url($path);
+        }
+
+
+        $post->save();
+
+        return redirect()->route('post.index')->with('success', 'Новый пост успешно создан ');
+
+
     }
+
+
 
     /**
      * Display the specified resource.
@@ -110,7 +146,10 @@ class PostController extends Controller
             ->join('users','posts.author_id','=','users.id')
             ->where('posts.title','like','%'.$search.'%')
             ->orWhere('posts.body','like','%'.$search.'%')
-            ->orWhere('posts.name','like','%'.$search.'%')
+            ->orWhere('posts.excerpt','like','%'.$search.'%')
+
+            
+            ->orWhere('users.name','like','%'.$search.'%')
             ->orderBy('posts.created_at','desc')
             ->paginate(4)
             ->appends(['search' => $request->input('search')]); // NB!  ;

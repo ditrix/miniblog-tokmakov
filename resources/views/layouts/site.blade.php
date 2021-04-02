@@ -14,7 +14,7 @@
 <div class="container">
 <header>
 	<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <a class="navbar-brand" href="#">Мой блог</a>
+        <a class="navbar-brand" href="/">Мой блог</a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
                 aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
@@ -31,8 +31,11 @@
                 <li class="nav-item">
                     <a class="nav-link" href="#">Контакты</a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{route('post.create')}}">Добавить пост</a>
+                </li>
             </ul>
-            <form class="form-inline my-2 my-lg-0">
+            <form class="form-inline my-2 my-lg-0" action="{{route('post.search')}}">
                 <input class="form-control mr-sm-2" name="search" type="search" placeholder="Поиск" aria-label="Поиск">
                 <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Поиск</button>
             </form>
@@ -40,6 +43,14 @@
     </nav>
 </header>
 <main>
+    @if($message = Session::get('success'))
+        <div class="alert alert-success alert-dismissible mt-4" role="alert">
+            <button type="button" class="close" data-dismiss="alert" aria-label="Закрыть">
+                <span aria-hidden="true">&times;</span>
+            </button>
+            {{ $message }}
+        </div>
+    @endif
     @yield('content')
 </main>
 <footer>

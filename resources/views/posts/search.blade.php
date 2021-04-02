@@ -2,8 +2,7 @@
 
 @section('content')
 
-	<h1>все посты блога</h1>
-	{{now()}}
+	<h1>результаты поиска</h1>
 	<div class="row">
 		@foreach($posts as $post)
 			<div class="col-6 mb-4">
@@ -30,7 +29,5 @@
 		@endforeach
 		
 	</div>
-	
 	{{ $posts->links() }}
-
 @endsection
