@@ -7,7 +7,9 @@ use App\Post;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Intervention\Image\Facades\Image;
 
+//use Intervention\Image\ImageServiceProvider;
 
 
 
@@ -60,19 +62,42 @@ class PostController extends Controller
         $post->excerpt = $request->input('excerpt');
         $post->body = $request->input('body');
 
-
-    // dump($request); die();
-
-        $image = $request->file('image');
-        
-
-
-
+/*        $image = $request->file('image');
         if($image){
-
             $path = Storage::putFile('public',$image);
             $post->image = Storage::url($path);
         }
+*/
+
+        $source = $request->file('image');        
+        if($source){
+            $ext = str_replace('jpeg', 'jpg', $source->extension());
+            $name = md5(uniqid());  
+            // сохраняем исходній файл
+            Storage::putFileAs('public/image/source',$source,$name.'.'.$ext);
+
+            $image = Image::make($source)
+                ->resizeCanvas(1200,400,'center',false,'dddddd')
+                ->encode('jpg',100);
+
+            // сохраняем это изображение под именем $name.jpg в директории public/image/image
+            Storage::put('public/image/image/' . $name . '.jpg', $image);
+            $image->destroy();    
+            $post->image = Storage::url('public/image/image/' . $name . '.jpg');
+            
+
+            // создаем jpg изображение для списка постов блога размером 600x200, качество 100%
+            $thumb = Image::make($source)
+                ->resizeCanvas(600, 200, 'center', false, 'dddddd')
+                ->encode('jpg', 100);
+            // сохраняем это изображение под именем $name.jpg в директории public/image/thumb
+            Storage::put('public/image/thumb/' . $name . '.jpg', $thumb);
+            $thumb->destroy();
+            $post->thumb = Storage::url('public/image/thumb/' . $name . '.jpg');
+
+        }
+
+
 
 
         $post->save();

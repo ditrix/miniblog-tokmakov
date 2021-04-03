@@ -12,7 +12,7 @@
 						<h3>{{$post->title}}</h3>
 					</div>
 					<div class="card-body">
-						<img src="{{$post->image ?? asset('img/noimage.png')}}" alt="" class="img-fluid">
+						<img src="{{$post->thumb ?? asset('img/noimage.png')}}" alt="" class="img-fluid">
 						<p>{{$post->excerpt}}</p>
 					</div>
 					<div class="card-footer">
