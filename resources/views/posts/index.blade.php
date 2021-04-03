@@ -22,7 +22,7 @@
                                 <br>
                                 Дата: {{ date_format($post->created_at, 'd.m.Y H:i') }}
                             </span>
-                            <a href="#" class="btn btn-dark float-right">Читать дальше</a>
+                            <a href="{{ route('post.show', ['id' => $post->id]) }}" class="btn btn-dark float-right">Читать дальше</a>
                         </div>
 					</div>
 				</div>

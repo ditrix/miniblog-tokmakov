@@ -69,7 +69,9 @@ class PostController extends Controller
         }
 */
 
-        $source = $request->file('image');        
+        $this->uploadImage($request,$post);
+
+/*        $source = $request->file('image');        
         if($source){
             $ext = str_replace('jpeg', 'jpg', $source->extension());
             $name = md5(uniqid());  
@@ -98,7 +100,7 @@ class PostController extends Controller
         }
 
 
-
+*/
 
         $post->save();
 
@@ -118,6 +120,13 @@ class PostController extends Controller
     public function show($id)
     {
         //
+        $post= Post::select('posts.*','users.name as author')
+            ->join('users','posts.author_id','=','users.id')
+            ->find($id);
+
+        return view('posts.show',compact('post'));
+        //  eq   return view('posts.show',['post' => $post]);
+
     }
 
     /**
@@ -128,7 +137,8 @@ class PostController extends Controller
      */
     public function edit($id)
     {
-        //
+        $post = Post::find($id);
+        return view('posts.edit', compact('post'));
     }
 
     /**
@@ -141,6 +151,19 @@ class PostController extends Controller
     public function update(Request $request, $id)
     {
         //
+
+        $post = Post::find($id);
+        $post->title = $request->input('title');
+        $post->excerpt = $request->input('excerpt');
+        $post->body = $request->input('body');
+
+        $this->uploadImage($request, $post);
+
+        $post->update();
+        return redirect()
+            ->route('post.show', compact('id'))
+            ->with('success', 'Пост успешно отредактирован');
+
     }
 
     /**
@@ -181,6 +204,81 @@ class PostController extends Controller
 
         return view('posts.search',compact('posts'));     
 
+    }
+
+
+
+
+
+    private function uploadImage(Request $request, Post $post){
+
+
+        if ($request->input('remove')) {
+
+
+            if (!empty($post->image)) {
+                
+                $name = basename($post->image);
+                if (Storage::exists('public/image/image/' . $name)) {
+                    Storage::delete('public/image/image/' . $name);
+                }
+                $post->image = null;
+            }
+            
+            if (!empty($post->thumb)) {
+                
+                $name = basename($post->thumb);
+            
+                if (Storage::exists('public/image/thumb/' . $name)) {
+                    Storage::delete('public/image/thumb/' . $name);
+                }
+                $post->thumb = null;
+            }
+
+        // здесь сложнее, мы не знаем, какое у файла расширение
+            if (!empty($name)) {
+                
+                $images = Storage::files('public/image/source');
+                $base = pathinfo($name, PATHINFO_FILENAME);
+                foreach ($images as $img) {
+                    $temp = pathinfo($img, PATHINFO_FILENAME);
+                    if ($temp == $base) {
+                        Storage::delete($img);
+                    break;
+                    }
+                }
+            }
+
+        }
+
+
+        $source = $request->file('image');        
+        if($source){
+            $ext = str_replace('jpeg', 'jpg', $source->extension());
+            $name = md5(uniqid());  
+            // сохраняем исходній файл
+            Storage::putFileAs('public/image/source',$source,$name.'.'.$ext);
+
+            $image = Image::make($source)
+                ->resizeCanvas(1200,400,'center',false,'dddddd')
+                ->encode('jpg',100);
+
+            // сохраняем это изображение под именем $name.jpg в директории public/image/image
+            Storage::put('public/image/image/' . $name . '.jpg', $image);
+            $image->destroy();    
+            $post->image = Storage::url('public/image/image/' . $name . '.jpg');
+            
+
+            // создаем jpg изображение для списка постов блога размером 600x200, качество 100%
+            $thumb = Image::make($source)
+                ->resizeCanvas(600, 200, 'center', false, 'dddddd')
+                ->encode('jpg', 100);
+            // сохраняем это изображение под именем $name.jpg в директории public/image/thumb
+            Storage::put('public/image/thumb/' . $name . '.jpg', $thumb);
+            $thumb->destroy();
+            $post->thumb = Storage::url('public/image/thumb/' . $name . '.jpg');
+
+        }
 
 
     }
